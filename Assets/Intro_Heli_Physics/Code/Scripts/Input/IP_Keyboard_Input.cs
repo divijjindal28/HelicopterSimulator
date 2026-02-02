@@ -43,6 +43,8 @@ namespace IndiePixel
             HandlePedal();
             HandleCollective();
             HandleCyclic();
+
+            ClampInputs();
         }
 
         void HandleThrottle() {
@@ -60,6 +62,15 @@ namespace IndiePixel
         void HandleCyclic() {
             cyclicInput.y = vertical;
             cyclicInput.x = horizontal;
+        }
+
+        protected void ClampInputs()
+        {
+            throttleInput = Mathf.Clamp(throttleInput, -1f, 1f);
+            collectiveInput = Mathf.Clamp(collectiveInput, -1f, 1f);
+            cyclicInput = Vector2.ClampMagnitude(cyclicInput, 1f);
+            pedalInput = Mathf.Clamp(pedalInput, -1f, 1f);
+
         }
         #endregion
     }
