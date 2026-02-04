@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using NUnit.Framework;
 using UnityEngine;
 
 
@@ -7,8 +9,10 @@ namespace IndiePixel {
     public class IP_Heli_Controller : IP_Base_RBController
     {
         #region Variables
-        //[Header("Controller Properties")]
+        [Header("Helicopter Properties")]
+        public List<IP_Heli_Engine> engines;
         private IP_Input_Controller input;
+
         #endregion
 
         
@@ -23,6 +27,11 @@ namespace IndiePixel {
 
         protected virtual void HandleEngines()
         {
+            for(int i = 0; i< engines.Count; i++) {
+                engines[i].UpdateEngine(input.StickyThrottleInput);
+                float finalPower = engines[i].CurrentHP;
+                Debug.Log("IPHC : Engine " + i + " Power: " + finalPower);
+            }
             //To be implemented in derived classes
         }
 

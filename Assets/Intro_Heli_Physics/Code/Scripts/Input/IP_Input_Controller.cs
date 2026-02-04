@@ -17,6 +17,34 @@ namespace IndiePixel
         public InputType inputType = InputType.Keyboard;
        
         private IP_Keyboard_Input keyInput;
+        private float throttleInput;
+        public float ThrottleInput {
+            get { return throttleInput; }
+        }
+
+        private float stickyThrottleInput;
+        public float StickyThrottleInput
+        {
+            get { return stickyThrottleInput; }
+        }
+
+        private float collectiveInput;
+        public float CollectiveInput
+        {
+            get { return collectiveInput; }
+        }
+
+        private Vector2 cyclicInput;
+        public Vector2 CyclicInput
+        {
+            get { return cyclicInput; }
+        }
+
+        private float pedalInput;
+        public float PedalInput
+        {
+            get { return pedalInput; }
+        }
         #endregion
 
         #region Built In Methods
@@ -25,6 +53,19 @@ namespace IndiePixel
             keyInput = GetComponent<IP_Keyboard_Input>();
             if(keyInput)
                 SetInputType(inputType);
+        }
+
+        void Update()
+        {
+            switch (inputType) {
+                case InputType.Keyboard:
+                    throttleInput = keyInput.RawThrottleInput;
+                    collectiveInput = keyInput.CollectiveInput;
+                    cyclicInput = keyInput.CyclicInput;
+                    pedalInput = keyInput.PedalInput;
+                    stickyThrottleInput = keyInput.StickyThrottleInput;
+                    break;
+            }
         }
         #endregion
 

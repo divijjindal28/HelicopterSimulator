@@ -1,3 +1,4 @@
+using TMPro.EditorUtilities;
 using UnityEngine;
 
 
@@ -11,9 +12,15 @@ namespace IndiePixel
 
         #region Properties
         private float throttleInput = 0f;
-        public float ThrottleInput
+        public float RawThrottleInput
         {
             get { return throttleInput; }
+        }
+
+        protected float stickyThrottleInput = 0f;
+        public float StickyThrottleInput
+        {
+            get { return stickyThrottleInput; }
         }
 
         public float collectiveInput = 0f;
@@ -45,6 +52,7 @@ namespace IndiePixel
             HandleCyclic();
 
             ClampInputs();
+            HandleStickyThrottle();
         }
 
         void HandleThrottle() {
@@ -71,6 +79,11 @@ namespace IndiePixel
             cyclicInput = Vector2.ClampMagnitude(cyclicInput, 1f);
             pedalInput = Mathf.Clamp(pedalInput, -1f, 1f);
 
+        }
+
+        protected void HandleStickyThrottle() {
+            stickyThrottleInput += RawThrottleInput * Time.deltaTime;
+            stickyThrottleInput = Mathf.Clamp(stickyThrottleInput, 0f, 1f);
         }
         #endregion
     }
