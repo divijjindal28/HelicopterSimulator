@@ -12,7 +12,8 @@ namespace IndiePixel {
         [Header("Helicopter Properties")]
         public List<IP_Heli_Engine> engines;
         private IP_Input_Controller input;
-
+        [Header("Helicopter Rotors")]
+        public IP_Heli_Rotor_Controller rotorCtrl;
         #endregion
 
         
@@ -21,8 +22,12 @@ namespace IndiePixel {
         protected override void HandlePhysics()
         {
             input = GetComponent<IP_Input_Controller>();
-            HandleEngines();
-            HandleCharacteristics();
+            if (input) {
+                HandleEngines();
+                HandleCharacteristics();
+                HandleRotors();
+            }
+            
         }
 
         protected virtual void HandleEngines()
@@ -34,6 +39,14 @@ namespace IndiePixel {
             }
             //To be implemented in derived classes
         }
+
+        protected virtual void HandleRotors()
+        {
+            if(rotorCtrl && engines.Count > 0)
+            {
+                rotorCtrl.UpdateRotors(input, engines[0].CurrentRPM);
+            }
+        }   
 
         protected virtual void HandleCharacteristics()
         {

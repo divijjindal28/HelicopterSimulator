@@ -84,6 +84,7 @@ namespace IndiePixel
         protected void HandleStickyThrottle() {
             stickyThrottleInput += RawThrottleInput * Time.deltaTime;
             stickyThrottleInput = Mathf.Clamp(stickyThrottleInput, 0f, 1f);
+            Debug.Log("Sticky Throttle Input: " + stickyThrottleInput);
         }
         #endregion
     }
