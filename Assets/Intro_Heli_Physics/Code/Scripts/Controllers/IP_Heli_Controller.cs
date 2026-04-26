@@ -14,9 +14,17 @@ namespace IndiePixel {
         private IP_Input_Controller input;
         [Header("Helicopter Rotors")]
         public IP_Heli_Rotor_Controller rotorCtrl;
+        private IP_Heli_Characteristics characteristics;
         #endregion
 
-        
+        public override void Start()
+        {
+            base.Start();
+            characteristics = GetComponent<IP_Heli_Characteristics>();
+            if (!characteristics) {
+                Debug.LogError("No Helicopter Characteristics found on " + gameObject.name);
+            }
+        }
 
         #region Custom methods
         protected override void HandlePhysics()
@@ -50,7 +58,10 @@ namespace IndiePixel {
 
         protected virtual void HandleCharacteristics()
         {
-            //To be implemented in derived classes
+            if(characteristics)
+            {
+                characteristics.UpdateCharacteristics(rb, input);
+            }
         }
         #endregion
 

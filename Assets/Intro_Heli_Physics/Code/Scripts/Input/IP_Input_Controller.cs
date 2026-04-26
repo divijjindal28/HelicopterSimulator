@@ -34,6 +34,8 @@ namespace IndiePixel
             get { return collectiveInput; }
         }
 
+        
+
         private float stickyCollectiveInput;
         public float StickyCollectiveInput
         {
@@ -67,7 +69,7 @@ namespace IndiePixel
                 case InputType.Keyboard:
                     throttleInput = keyInput.RawThrottleInput;
                     collectiveInput = keyInput.CollectiveInput;
-                    //stickyCollectiveInput = keyInput.StickyCollectiveInput;
+                    stickyCollectiveInput = keyInput.StickyCollectiveInput;
                     cyclicInput = keyInput.CyclicInput;
                     pedalInput = keyInput.PedalInput;
                     stickyThrottleInput = keyInput.StickyThrottleInput;

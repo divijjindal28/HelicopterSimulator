@@ -6,7 +6,7 @@ using UnityEngine;
 public class IP_Rotor_Blur : MonoBehaviour, IP_IHeliRotor
 {
     [Header("Rotor Blur Settings")]
-    public float maxDps = 100f;
+    public float maxDps = 1000f;
     public List<GameObject> blades = new List<GameObject>();
     public GameObject blurGeo;
     public List<Texture2D> blurTextures;
