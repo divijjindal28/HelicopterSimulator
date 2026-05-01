@@ -41,7 +41,15 @@ namespace IndiePixel{
 
             //calculate RPMs
             float wantedRPM = throttleInput * maxRPM;
-            currentRPM = Mathf.Lerp(currentRPM, wantedRPM, Time.deltaTime * powerDelay);
+            if (throttleInput < 0)
+            {
+                wantedRPM = 0;
+                currentRPM = Mathf.Lerp(currentRPM, wantedRPM, Time.deltaTime * 500);
+            }
+            else {
+                currentRPM = Mathf.Lerp(currentRPM, wantedRPM, Time.deltaTime * powerDelay);
+            }
+                
             Debug.Log(" Wanted RPM: " + wantedRPM + " Current RPM: " + currentRPM);
         }
         #endregion

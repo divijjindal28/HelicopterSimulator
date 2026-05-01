@@ -3,15 +3,16 @@ using UnityEngine;
 
 /// <summary>
 /// After MRUK finishes scanning and detects the bed,
-/// this places an object at the CENTER TOP of the detected bed.
+/// this moves an existing object so that:
+/// Bed Reference Point == Object Child Reference Point
+///
+/// No Instantiate is used.
+/// Uses MRUK semantic BED label instead of Unity tag.
 /// </summary>
 public class PlaceObjectOnBed : MonoBehaviour
 {
-    [Header("Object To Place")]
-    public GameObject objectPrefab;
-
-    [Header("Height Offset Above Bed")]
-    public float topOffset = 0.05f;   // 5 cm above bed surface
+    [Header("Existing Object To Move")]
+    public GameObject objectToPlace;
 
     private void Start()
     {
@@ -22,8 +23,6 @@ public class PlaceObjectOnBed : MonoBehaviour
             Debug.LogError("[PlaceObjectOnBed] MRUK Instance is NULL.");
             return;
         }
-
-        Debug.Log("[PlaceObjectOnBed] MRUK Instance found.");
 
         MRUK.Instance.SceneLoadedEvent.AddListener(OnSceneLoaded);
         Debug.Log("[PlaceObjectOnBed] SceneLoadedEvent listener added.");
@@ -38,10 +37,6 @@ public class PlaceObjectOnBed : MonoBehaviour
             MRUK.Instance.SceneLoadedEvent.RemoveListener(OnSceneLoaded);
             Debug.Log("[PlaceObjectOnBed] SceneLoadedEvent listener removed.");
         }
-        else
-        {
-            Debug.Log("[PlaceObjectOnBed] MRUK Instance already null during destroy.");
-        }
     }
 
     private void OnSceneLoaded()
@@ -52,56 +47,109 @@ public class PlaceObjectOnBed : MonoBehaviour
 
     void PlaceOnDetectedBed()
     {
-        Debug.Log("[PlaceObjectOnBed] Searching for detected bed with tag 'Bed'.");
+        MRUKRoom room = MRUK.Instance.GetCurrentRoom();
 
-        GameObject detectedBed = GameObject.FindGameObjectWithTag("Bed");
+        if (room == null)
+        {
+            Debug.LogError("[PlaceObjectOnBed] No room found.");
+            return;
+        }
 
+        Debug.Log("[PlaceObjectOnBed] Room found.");
+        Debug.Log("[PlaceObjectOnBed] Total anchors in room: " + room.Anchors.Count);
+
+        MRUKAnchor detectedBed = null;
+
+        Debug.Log("[PlaceObjectOnBed] Searching anchors for BED label...");
+
+        foreach (var anchor in room.Anchors)
+        {
+            Debug.Log("[PlaceObjectOnBed] Checking Anchor: " + anchor.name);
+            //detectedBed = anchor;
+            if (anchor.name.Contains("FLOOR"))
+            {
+                detectedBed = anchor;
+                Debug.Log("[PlaceObjectOnBed] BED found: " + anchor.name);
+                break;
+            }
+        }
+        //PrintSceneHierarchy();
         if (detectedBed == null)
         {
-            Debug.LogWarning("[PlaceObjectOnBed] No bed detected.");
+            Debug.LogWarning("[PlaceObjectOnBed] No BED anchor detected.");
             return;
         }
 
-        Debug.Log("[PlaceObjectOnBed] Bed detected: " + detectedBed.name);
-
-        Renderer bedRenderer = detectedBed.GetComponentInChildren<Renderer>();
-
-        if (bedRenderer == null)
+        if (objectToPlace == null)
         {
-            Debug.LogWarning("[PlaceObjectOnBed] Bed renderer not found.");
+            Debug.LogError("[PlaceObjectOnBed] objectToPlace is NULL.");
             return;
         }
 
-        Debug.Log("[PlaceObjectOnBed] Bed renderer found: " + bedRenderer.name);
+        // Bed reference point
+        //if (detectedBed.transform.childCount == 0)
+        //{
+        //    Debug.LogError("[PlaceObjectOnBed] Bed has no child reference point.");
+        //    return;
+        //}
+        objectToPlace.transform.position = detectedBed.transform.position + Vector3.up;
 
-        Bounds bedBounds = bedRenderer.bounds;
+        //COMMENTED FOR TEST
+        //Transform bedReference = detectedBed.transform.GetChild(0);
+        //Debug.Log("[PlaceObjectOnBed] Bed reference point: " + bedReference.name);
 
-        Debug.Log("[PlaceObjectOnBed] Bed Bounds Center: " + bedBounds.center);
-        Debug.Log("[PlaceObjectOnBed] Bed Bounds Max: " + bedBounds.max);
-        Debug.Log("[PlaceObjectOnBed] Bed Bounds Size: " + bedBounds.size);
+        //// Object reference point
+        //if (objectToPlace.transform.childCount == 0)
+        //{
+        //    Debug.LogError("[PlaceObjectOnBed] Object has no child reference point.");
+        //    return;
+        //}
 
-        // Center of bed
-        Vector3 spawnPosition = bedBounds.center;
-        Debug.Log("[PlaceObjectOnBed] Initial spawn position (center): " + spawnPosition);
+        //Transform objectReference = objectToPlace.transform.GetChild(0);
+        //Debug.Log("[PlaceObjectOnBed] Object reference point: " + objectReference.name);
 
-        // Move to top surface
-        spawnPosition.y = bedBounds.max.y + topOffset;
-        Debug.Log("[PlaceObjectOnBed] Final spawn position (top center + offset): " + spawnPosition);
+        //// Calculate offset between object root and child reference point
+        //Vector3 offset = objectToPlace.transform.position - objectReference.position;
+        //Debug.Log("[PlaceObjectOnBed] Offset calculated: " + offset);
 
-        if (objectPrefab == null)
+        //// Move object so child aligns with bed child
+        //objectToPlace.transform.position = bedReference.position + offset;
+        //Debug.Log("[PlaceObjectOnBed] Object moved to align reference points.");
+
+        //// Match rotation
+        //objectToPlace.transform.rotation = detectedBed.transform.rotation;
+        //Debug.Log("[PlaceObjectOnBed] Object rotation matched to bed.");
+    }
+
+    void PrintSceneHierarchy()
+    {
+        Debug.Log("========== SCENE HIERARCHY START ==========");
+
+        GameObject[] rootObjects = UnityEngine.SceneManagement.SceneManager
+            .GetActiveScene()
+            .GetRootGameObjects();
+
+        foreach (GameObject root in rootObjects)
         {
-            Debug.LogError("[PlaceObjectOnBed] objectPrefab is NULL. Cannot instantiate.");
-            return;
+            Debug.Log("[PlaceObjectOnBed]   : "+root.gameObject.name);
+            PrintChildrenRecursive(root.transform, 0);
         }
 
-        Debug.Log("[PlaceObjectOnBed] Instantiating object: " + objectPrefab.name);
+        Debug.Log("========== SCENE HIERARCHY END ==========");
+    }
 
-        Instantiate(
-            objectPrefab,
-            spawnPosition,
-            Quaternion.identity
-        );
+    void PrintChildrenRecursive(Transform current, int level)
+    {
+        //string indent = new string('-', level * 2);
 
-        Debug.Log("[PlaceObjectOnBed] Object placed on top center of bed successfully.");
+        //Debug.Log(indent + "> " + current.gameObject.name);
+
+
+        foreach (Transform child in current)
+        {
+            Debug.Log("[PlaceObjectOnBed]   : " + child.gameObject.name);
+
+            PrintChildrenRecursive(child, level + 1);
+        }
     }
 }
