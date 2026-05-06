@@ -1,197 +1,111 @@
-using UnityEngine;
-
+﻿using UnityEngine;
 
 namespace IndiePixel
 {
     public class IP_Keyboard_Input : IP_BaseHeli_Input
     {
-        #region Variables
-        
+        #region Handle References
+
+        public Transform CollectiveHandle;
+        public Transform ThrottleHandle;
+        public Transform PedalIncrease;
+        public Transform PedalDecrease;
+        public Transform VerticleHandle;
+        public Transform HorizontalHandle;
+
         #endregion
 
         #region Properties
+
         private float throttleInput = 0f;
-        public float RawThrottleInput
-        {
-            get { return throttleInput; }
-        }
+        public float RawThrottleInput => throttleInput;
 
         protected float stickyThrottleInput = 0f;
-        public float StickyThrottleInput
-        {
-            get { return stickyThrottleInput; }
-        }
+        public float StickyThrottleInput => stickyThrottleInput;
 
         public float collectiveInput = 0f;
-        public float CollectiveInput
-        {
-            get { return collectiveInput; }
-        }
+        public float CollectiveInput => collectiveInput;
 
         public float stickyCollectiveInput = 0f;
-        public float StickyCollectiveInput
-        {
-            get { return stickyCollectiveInput; }
-        }
+        public float StickyCollectiveInput => stickyCollectiveInput;
 
         public Vector2 cyclicInput = Vector2.zero;
-        public Vector2 CyclicInput
-        {
-            get { return cyclicInput; }
-        }
+        public Vector2 CyclicInput => cyclicInput;
+
         public float pedalInput = 0f;
-        public float PedalInput
-        {
-            get { return pedalInput; }
-        }
+        public float PedalInput => pedalInput;
+
         #endregion
 
-        #region BuiltInMethods
-        #endregion
-        #region CustomMethods
         protected override void HandleInputs()
         {
             base.HandleInputs();
-            //HandleThrottle();
-            //HandlePedal();
-            //HandleCollective();
-            //HandleCyclic();
 
-            HandleThrottleOVR();
-            HandleCollectiveOVR();
-            HandleCyclicOVR();
-            HandlePedalOVR();
+            // DISABLED OVR INPUT
+            // HandleThrottleOVR();
+            // HandleCollectiveOVR();
+            // HandleCyclicOVR();
+            // HandlePedalOVR();
+
+            HandleThrottleFromGraphics();
+            HandleCollectiveFromGraphics();
+            HandlePedalFromGraphics();
+            HandleCyclicFromGraphics();
 
             ClampInputs();
             HandleStickyThrottle();
             HandleStickyCollective();
         }
 
-        void HandleThrottle() {
-            throttleInput = Input.GetAxis("Throttle");
-        }
+        #region GRAPHICS → INPUT
 
-        void HandleThrottleOVR()
+        void HandleThrottleFromGraphics()
         {
-            try
-            {
-                float throttleSpeed = .4f;   // change speed here
-                Debug.Log("IP_Keyboard_Input HandleThrottleOVR Started");
+            float angle = GetNormalizedAngle(ThrottleHandle.localEulerAngles.x);
+            float normalized = Mathf.InverseLerp(-45f, 45f, angle);
 
-                if (OVRInput.Get(OVRInput.Button.One))
-                {
-                    throttleInput += throttleSpeed * Time.deltaTime;
-                    Debug.Log("IP_Keyboard_Input HandleThrottleOVR A Pressed -> Throttle Increasing");
-                }
-
-                if (OVRInput.Get(OVRInput.Button.Two))
-                {
-                    throttleInput -= throttleSpeed * Time.deltaTime;
-                    Debug.Log("IP_Keyboard_Input HandleThrottleOVR  B Pressed -> Throttle Decreasing");
-                }
-                
-                throttleInput = Mathf.Clamp(throttleInput, -1f, 1f);
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError("IP_Keyboard_Input HandleThrottleOVR ERROR in HandleThrottleOVR: " + ex.Message);
-            }
+            throttleInput = normalized;
         }
 
-        void HandlePedal() {
-            pedalInput = Input.GetAxis("Pedal");
-        }
-
-        void HandlePedalOVR()
+        void HandleCollectiveFromGraphics()
         {
-            try
-            {
-                Debug.Log("IP_Keyboard_Input HandlePedalOVR Started");
+            float angle = GetNormalizedAngle(CollectiveHandle.localEulerAngles.x);
+            float normalized = Mathf.InverseLerp(-45f, 45f, angle);
 
-                // Read right thumbstick horizontal axis
-                float horizontalInput =
-                    OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick).x;
-
-                // Optional: use right controller stick instead
-                // float horizontalInput =
-                //     OVRInput.Get(OVRInput.Axis2D.SecondaryThumbstick).x;
-
-                pedalInput = horizontalInput;
-
-                pedalInput = Mathf.Clamp(pedalInput, -1f, 1f);
-
-                Debug.Log("IP_Keyboard_Input HandlePedalOVR Pedal Input: " + pedalInput);
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError("IP_Keyboard_Input HandlePedalOVR ERROR: " + ex.Message);
-            }
+            collectiveInput = normalized;
         }
 
-        void HandleCollective() {
-            collectiveInput = Input.GetAxis("Collective");
-        }
-
-        void HandleCollectiveOVR()
+        void HandlePedalFromGraphics()
         {
-            try
-            {
-                Debug.Log("IP_Keyboard_Input HandleCollectiveOVR Started");
-                // Read right thumbstick vertical axis
-                float verticalInput =
-                    OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick).y;
-                Debug.Log("IP_Keyboard_Input HandleCollectiveOVR : "+verticalInput);
-                // Optional: use right controller stick instead
-                // float verticalInput =
-                //     OVRInput.Get(OVRInput.Axis2D.SecondaryThumbstick).y;
+            float incAngle = GetNormalizedAngle(PedalIncrease.localEulerAngles.x);
+            float decAngle = GetNormalizedAngle(PedalDecrease.localEulerAngles.x);
 
-                
-                
-                collectiveInput = verticalInput;
-                collectiveInput = Mathf.Clamp(collectiveInput, -1f, 1f);
-                Debug.Log("IP_Keyboard_Input HandleCollectiveOVR Collective Input: " + collectiveInput);
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError("IP_Keyboard_Input HandleCollectiveOVR ERROR: " + ex.Message);
-            }
+            float inc = Mathf.InverseLerp(-45f, 45f, incAngle);
+            float dec = Mathf.InverseLerp(-45f, 45f, decAngle);
+
+            pedalInput = inc - dec; // -1 → 1
         }
 
-        void HandleCyclic() {
-
-            cyclicInput.y = vertical;
-            cyclicInput.x = horizontal;
-        }
-        void HandleCyclicOVR()
+        void HandleCyclicFromGraphics()
         {
-            try
-            {
-                Debug.Log("IP_Keyboard_Input HandleCyclic Started");
+            float verticalAngle = GetNormalizedAngle(VerticleHandle.localEulerAngles.x);
+            float horizontalAngle = GetNormalizedAngle(HorizontalHandle.localEulerAngles.z);
 
-                // Keyboard fallback
-                cyclicInput.y = vertical;
-                cyclicInput.x = horizontal;
+            float pitch = Mathf.Clamp(verticalAngle / 10f, -1f, 1f);
+            float roll = Mathf.Clamp(-horizontalAngle / 30f, -1f, 1f);
 
-                // Left controller joystick
-                Vector2 leftStick =
-                    OVRInput.Get(OVRInput.Axis2D.SecondaryThumbstick);
+            cyclicInput.y = pitch;
+            cyclicInput.x = roll;
+        }
 
-                // Override with left stick if moved
-                if (leftStick.magnitude > 0.05f)
-                {
-                    cyclicInput.x = leftStick.x;   // roll left/right
-                    cyclicInput.y = leftStick.y;   // pitch forward/back
-                }
+        #endregion
 
-                cyclicInput = Vector2.ClampMagnitude(cyclicInput, 1f);
+        #region Helpers
 
-                Debug.Log("IP_Keyboard_Input HandleCyclic X: " + cyclicInput.x +
-                          " Y: " + cyclicInput.y);
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError("IP_Keyboard_Input HandleCyclic ERROR: " + ex.Message);
-            }
+        float GetNormalizedAngle(float angle)
+        {
+            if (angle > 180f) angle -= 360f;
+            return angle;
         }
 
         protected void ClampInputs()
@@ -200,31 +114,18 @@ namespace IndiePixel
             collectiveInput = Mathf.Clamp(collectiveInput, -1f, 1f);
             cyclicInput = Vector2.ClampMagnitude(cyclicInput, 1f);
             pedalInput = Mathf.Clamp(pedalInput, -1f, 1f);
-
         }
 
-        protected void HandleStickyThrottle() {
-            stickyThrottleInput += RawThrottleInput * Time.deltaTime;
-            stickyThrottleInput = Mathf.Clamp(stickyThrottleInput, 0f, 1f);
-            Debug.Log("Sticky Throttle Input: " + stickyThrottleInput);
+        protected void HandleStickyThrottle()
+        {
+            stickyThrottleInput = Mathf.Clamp01(throttleInput);
         }
 
-        protected void HandleStickyCollective() {
-
-            if (Mathf.Abs(collectiveInput) > 0.3f) {
-                stickyCollectiveInput += -collectiveInput * Time.deltaTime * .3f;
-            }
-            //stickyCollectiveInput += -collectiveInput * Time.deltaTime * .3f;
-            
-            stickyCollectiveInput = Mathf.Clamp(stickyCollectiveInput, 0f, 1f);
-            if (OVRInput.Get(OVRInput.Button.Three))
-            {
-                stickyCollectiveInput = 0.6f;
-            }
-            Debug.Log("Sticky Collective Input: " + stickyCollectiveInput + "   "+ collectiveInput);
+        protected void HandleStickyCollective()
+        {
+            stickyCollectiveInput = Mathf.Clamp01(collectiveInput);
         }
+
         #endregion
     }
-
-
 }

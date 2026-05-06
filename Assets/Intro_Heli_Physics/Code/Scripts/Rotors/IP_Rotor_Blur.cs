@@ -50,6 +50,7 @@ public class IP_Rotor_Blur : MonoBehaviour, IP_IHeliRotor
             {
                 blade.SetActive(viz);
             }
+            blurGeo.SetActive(!viz);
         }
         
        

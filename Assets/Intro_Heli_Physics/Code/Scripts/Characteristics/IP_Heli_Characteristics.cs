@@ -30,7 +30,8 @@ namespace IndiePixel
         public GameObject CollectiveHandle;
         public GameObject ThrottleHandle;
         public GameObject PedalIncrease;
-        public GameObject PedalDecrease;
+        public GameObject PedalDecrease; 
+        public float speedMPH;
 
         public void UpdateCharacteristics(Rigidbody rb, IP_Input_Controller input)
         {
@@ -39,7 +40,10 @@ namespace IndiePixel
             HandlePedals(rb, input);
             CalculateAngles();
             AutoLevel(rb);
-            HandleHeliThrottleGraphics(input);
+            //HandleHeliThrottleGraphics(input);
+
+            float speedMps = rb.linearVelocity.magnitude;
+            speedMPH = speedMps * 2.23694f;
         }
 
         protected virtual void HandleLift2(Rigidbody rb, IP_Input_Controller input) {
@@ -89,7 +93,7 @@ namespace IndiePixel
                 rb.AddForce(finalLiftForce, ForceMode.Force);
                 Debug.Log("IP_Heli_Characteristics : " + "  " + transform.up * (Physics.gravity.magnitude) * rb.mass + minLiftForce + "  " + maxLiftForceVector + "  " + normalzedRPM + "    " + input.StickyCollectiveInput + "    " + finalLiftForce);
 
-                HandleHeliCollectiveGraphics(input.StickyCollectiveInput);
+                //HandleHeliCollectiveGraphics(input.StickyCollectiveInput);
             }
         }
 
@@ -139,7 +143,7 @@ namespace IndiePixel
             Vector3 rightVec = flatRight * RightDot;
             Vector3 FinalCyclicVector = Vector3.ClampMagnitude(forwardVec + rightVec, 1f)* cyclicPowerForce/10 * cyclicForceMultiplier;
             rb.AddForce(FinalCyclicVector, ForceMode.Force);
-            HandleHeliCyclicGraphics(input.CyclicInput);
+            //HandleHeliCyclicGraphics(input.CyclicInput);
         }
 
         void HandleHeliCyclicGraphics(Vector2 CyclicInput)
@@ -176,7 +180,7 @@ namespace IndiePixel
         {
             rb.AddTorque(Vector3.up * tailForce * input.PedalInput, ForceMode.Acceleration);
             Debug.Log("Handling Pedals : " + input.PedalInput);
-            HandleHeliPedalGraphics(input.PedalInput);
+            //HandleHeliPedalGraphics(input.PedalInput);
         }
 
         void HandleHeliPedalGraphics(float pedalInput)
