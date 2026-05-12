@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TextToSpeechSettings
   m_EditorClassIdentifier: 
   StreamingAssetCacheDirectoryName: TextToSpeech
-  GenerateAudioInBuildingProcess: 1
+  GenerateAudioInBuildingProcess: 0
   IgnoreExistingTextToSpeechFiles: 0
   voiceProfiles:
   - displayName: Default
