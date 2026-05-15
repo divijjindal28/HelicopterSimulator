@@ -351,7 +351,7 @@
       }
     },
     "com.unity.timeline": {
-      "version": "1.8.9",
+      "version": "1.8.12",
       "depth": 0,
       "source": "registry",
       "dependencies": {
